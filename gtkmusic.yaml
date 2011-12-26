@@ -1,0 +1,19 @@
+depends:
+- {name: gtk, version: ''}
+- {name: libgee2, version: ''}
+files:
+general:
+  architecture: all
+  authors:
+  - {email: leandro.mattioli@gmail.com, name: Leandro Resende Mattioli}
+  maintainer: {email: leandro.mattioli@gmail.com, name: Leandro Resende Mattioli}
+  name: libgtkmusic
+  package_name: libgtkmusic
+  priority: optional
+  section: devel
+  short_description: Provides GTK+ Widgets for musical instruments
+  version: '0.2'
+  needs: X11, requires_terminal: false, section: ''}
+predepends: []
+recommends: []
+suggests: []

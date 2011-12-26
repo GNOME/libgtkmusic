@@ -1,0 +1,13 @@
+What's libgtkmusic ?
+====================
+
+This library aims to create a useful set of Gtk widgets for creating
+and interacting with customized musical instruments.
+
+Currently it supports the Guitar and Piano widgets.
+
+Known Bugs
+==========
+
+ * crashes in Glade (when trying to access Gee collections)
+ * crashes in GIR (when trying to use library with Python).
