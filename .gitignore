@@ -1,1 +1,12 @@
-autom4te.cache/**/*
+autom4te.cache
+config.h
+config.log
+config.status
+stamp-h1
+Makefile
+libtool
+gtkmusic-0.2.pc
+src/.deps
+src/.libs
+Makefile.in
+*.stamp

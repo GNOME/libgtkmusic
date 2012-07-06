@@ -143,8 +143,8 @@ public class Guitar : DrawingArea {
         guitarStrings = new ArrayList<GuitarString> ();
         fretMarks = new HashSet<GuitarFretMark> ();
         markedNotes = new HashMap<GuitarPosition, MarkedNoteStyle> 
-                          ( (HashFunc) GuitarPosition.hash_func,
-                            (EqualFunc) GuitarPosition.equal_func );
+                          ( (Gee.HashDataFunc?) GuitarPosition.hash_func,
+                            (Gee.EqualDataFunc?) GuitarPosition.equal_func );
         foreach(string s in defaultStrings)
             guitarStrings.add(new GuitarString(s));
         foreach(ushort i in defaultFretMarks)
@@ -273,8 +273,8 @@ public class Guitar : DrawingArea {
         short fretIndex;
         HashSet<string> notesWithOctaves;
         var validPositions = new HashSet<GuitarPosition> (
-            (HashFunc) GuitarPosition.hash_func,
-            (EqualFunc) GuitarPosition.equal_func
+            (Gee.HashDataFunc?) GuitarPosition.hash_func,
+            (Gee.EqualDataFunc?) GuitarPosition.equal_func
         );
         
         //Getting list of "complete" notes (with octave component)

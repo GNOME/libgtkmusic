@@ -8,6 +8,7 @@
                     <!--parent="GtkDrawingArea" />-->
 <glade-widget-class name="GtkMusicPiano" generic-name="piano" title="Piano"
                     default-width="120" default-height="40">
+    <post-create-function>gtk_music_piano_new</post-create-function>
 </glade-widget-class>
                     <!--parent="GtkDrawingArea" />-->
 </glade-widget-classes>

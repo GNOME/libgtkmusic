@@ -1,7 +1,7 @@
 ###############################################################################
 #autoconf and automake init
 ###############################################################################
-AC_INIT([libgtkmusic], [0.2], [leandro.mattioli@gmail.com])
+AC_INIT([libgtkmusic], [0.21], [leandro.mattioli@gmail.com])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_MACRO_DIR([m4])
 AM_INIT_AUTOMAKE([-Wall -Werror])
@@ -22,11 +22,11 @@ PKG_CHECK_MODULES(LIBGTKMUSICDEPS,
 	glib-2.0 > 2.28.0
 	gobject-2.0 > 2.28.0
 	gtk+-3.0 > 3.0.0
-	gee-1.0
+	gee-0.8
 )
-PKG_CHECK_MODULES(LIBGTKMUSIC,
-    gtkmusic-0.2
-)
+#PKG_CHECK_MODULES(LIBGTKMUSIC, Add for the tests
+#    gtkmusic-0.2
+#)
 GOBJECT_INTROSPECTION_CHECK([0.9.0])
 
 ###############################################################################
@@ -78,8 +78,6 @@ AM_CONDITIONAL([ENABLE_GLADE_CATALOG],[test "$enable_glade_catalog" = "yes"])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([
 	Makefile
-	src/Makefile
-	glade/Makefile
 	gtkmusic-0.2.pc
 ])
 AC_OUTPUT
