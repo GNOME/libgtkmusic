@@ -126,19 +126,19 @@ CLEANFILES += \
 ###############################################################################
 
 #TODO Find a more elegant way of doing this
-#bin_PROGRAMS = tests_notes tests_piano tests_guitar
-#COMMON_CFLAGS = $(LIBGTKMUSICDEPS_CFLAGS) `pkg-config --cflags gtkmusic-0.2`
-#COMMON_LIBS = $(LIBGTKMUSICDEPS_LIBS) `pkg-config --libs gtkmusic-0.2`
-#COMMON_VALAFLAGS = --pkg gee-0.8 --pkg gtkmusic-0.2 --pkg gtk+-3.0
-#tests_notes_SOURCES = $(srcdir)/test/TestsMusicalNotes.vala
-#tests_notes_VALAFLAGS = $(COMMON_VALAFLAGS)
-#tests_notes_CFLAGS= $(COMMON_CFLAGS)
-#tests_notes_LDFLAGS= $(COMMON_LIBS)
-#tests_piano_SOURCES = $(srcdir)/test/TestsPiano.vala
-#tests_piano_VALAFLAGS = $(COMMON_VALAFLAGS)
-#tests_piano_CFLAGS=$(COMMON_CFLAGS)
-#tests_piano_LDFLAGS=$(COMMON_LIBS)
-#tests_guitar_SOURCES = $(srcdir)/test/TestsGuitar.vala
-#tests_guitar_VALAFLAGS = $(COMMON_VALAFLAGS)
-#tests_guitar_CFLAGS=$(COMMON_CFLAGS)
-#tests_guitar_LDFLAGS=$(COMMON_LIBS)
+bin_PROGRAMS = tests_notes tests_piano tests_guitar
+COMMON_CFLAGS = $(LIBGTKMUSICDEPS_CFLAGS) `pkg-config --cflags gtkmusic-0.2`
+COMMON_LIBS = $(LIBGTKMUSICDEPS_LIBS) `pkg-config --libs gtkmusic-0.2`
+COMMON_VALAFLAGS = --pkg gee-0.8 --pkg gtkmusic-0.2 --pkg gtk+-3.0
+tests_notes_SOURCES = $(srcdir)/test/TestsMusicalNotes.vala
+tests_notes_VALAFLAGS = $(COMMON_VALAFLAGS)
+tests_notes_CFLAGS= $(COMMON_CFLAGS)
+tests_notes_LDFLAGS= $(COMMON_LIBS)
+tests_piano_SOURCES = $(srcdir)/test/TestsPiano.vala
+tests_piano_VALAFLAGS = $(COMMON_VALAFLAGS)
+tests_piano_CFLAGS=$(COMMON_CFLAGS)
+tests_piano_LDFLAGS=$(COMMON_LIBS)
+tests_guitar_SOURCES = $(srcdir)/test/TestsGuitar.vala
+tests_guitar_VALAFLAGS = $(COMMON_VALAFLAGS)
+tests_guitar_CFLAGS=$(COMMON_CFLAGS)
+tests_guitar_LDFLAGS=$(COMMON_LIBS)
