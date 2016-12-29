@@ -1,9 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<glade-catalog name="gtkmusic" library="gtkmusic-0.2">
+<glade-catalog name="gtkmusic" library="gtkmusic">
 <glade-widget-classes>
 <glade-widget-class name="GtkMusicGuitar" generic-name="guitar" title="Guitar"
                     default-height="60" default-width="170">
     <post-create-function>gtk_music_guitar_new</post-create-function>
+        <packing-defaults>
+          <parent-class name="GtkDrawingArea">
+            <child-property id="expand" default="true"/>
+          </parent-class>
+        </packing-defaults>
 </glade-widget-class>
                     <!--parent="GtkDrawingArea" />-->
 <glade-widget-class name="GtkMusicPiano" generic-name="piano" title="Piano"

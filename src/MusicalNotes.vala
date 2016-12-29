@@ -109,7 +109,7 @@ public class MusicalNotes {
     * @param note The note in scientific notation (with octave)
     * @return The associated MIDI code
     **/
-    public static ushort get_note_as_midi_code(string note) 
+    public static short get_note_as_midi_code(string note) 
            throws MusicalNoteError {
         //Number components
         short high = -1;
