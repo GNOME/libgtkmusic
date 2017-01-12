@@ -9,5 +9,5 @@ Name: libgtkmusic
 Description: Gtk musical widgets collection
 Version: @VERSION_STRING@
 Requires: glib-2.0 gobject-2.0 gtk+-3.0 gee-0.8
-Libs: -L${libdir} -lgtkmusic-@VERSION_STRING@
+Libs: -L${libdir} -lgtkmusic
 Cflags: -I${includedir}/gtkmusic-@VERSION_STRING@

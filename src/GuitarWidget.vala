@@ -69,9 +69,9 @@ public class Guitar : DrawingArea {
     //=========================================================================
     //Signals
     //=========================================================================
-    public signal void note_pressed (Widget widget, Gdk.EventButton event,
+    public signal void note_pressed (Gdk.EventButton event,
                                      GuitarPosition pos);
-    public signal void note_released (Widget widget, Gdk.EventButton event,
+    public signal void note_released (Gdk.EventButton event,
                                       GuitarPosition pos);
     
     //=========================================================================
@@ -355,7 +355,7 @@ public class Guitar : DrawingArea {
     public override bool button_press_event (Gdk.EventButton event) {
         GuitarPosition? pos = point_to_position(event.x, event.y);
         if(pos != null)
-            note_pressed(this, event, pos);
+            note_pressed(event, pos);
         return true;
     }
 
@@ -368,7 +368,7 @@ public class Guitar : DrawingArea {
     public override bool button_release_event (Gdk.EventButton event) {
         GuitarPosition? pos = point_to_position(event.x, event.y);
         if(pos != null)
-            note_released(this, event, pos);
+            note_released(event, pos);
         return true;   
     }
 

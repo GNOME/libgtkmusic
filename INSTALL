@@ -1,5 +1,15 @@
 Suggested installation method
 
+Dependencies (Ubuntu package names):
+	libgee-0.8-dev
+	libgee-0.8-2
+	valac-0.30 (or newer)
+
+Optional Features
+	gobject-introspection
+	libgirepository
+	libgladeui-dev
+
 Assuming that cmake and all dependencies are installed, run:
 	mkdir build
 	cd build

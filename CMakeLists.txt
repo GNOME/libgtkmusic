@@ -20,19 +20,20 @@ include(UseVala)
 
 set(AUTHOR_NAME "Leandro Resende Mattioli")
 set(AUTHOR_EMAIL "leandro.mattioli@gmail.com")
-set(AUTHOR_CONTACT ${AUTHOR_NAME} <${AUTHOR_EMAIl}>)
+set(AUTHOR_CONTACT ${AUTHOR_NAME} <${AUTHOR_EMAIL}>)
 
 set(PROJECT_URL "https://wiki.gnome.org/Projects/libgtkmusic")
 
 set(VERSION_MAJOR "0")
 set(VERSION_MINOR "4")
-set(VERSION_STRING ${VERSION_MAJOR}.${VERSION_MINOR})
+set(VERSION ${VERSION_MAJOR}.${VERSION_MINOR}) # Build Version
+set(SOVERSION ${VERSION_MAJOR})                # API Version
 
 include_directories(src)
 
-set(GIR_FILE GtkMusic-${VERSION_STRING}.gir)
-set(TYPELIB_FILE GtkMusic-${VERSION_STRING}.typelib)
-set(VAPI_FILE gtkmusic-${VERSION_STRING}.vapi)
+set(GIR_FILE GtkMusic-${VERSION}.gir)
+set(TYPELIB_FILE GtkMusic-${VERSION}.typelib)
+set(VAPI_FILE gtkmusic-${VERSION}.vapi)
 
 # =============================================================================
 # Dependencies
@@ -42,6 +43,10 @@ find_package(PkgConfig REQUIRED)
 find_package(Vala REQUIRED)
 pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
 pkg_check_modules(GEE REQUIRED gee-0.8)
+
+if(${VALA_VERSION} VERSION_LESS "0.30")
+message(ERROR "This project requires Vala 0.30 or newer!")
+endif(${VALA_VERSION} VERSION_LESS "0.30")
 
 # =============================================================================
 # Main Library, Header and Pkg-Config
@@ -56,10 +61,11 @@ vala_precompile(
              posix
 
     OPTIONS	-h gtkmusic-internals.h 
-	        --internal-vapi gtkmusic-internals-${VERSION_STRING}.vapi 
-	        --library gtkmusic-${VERSION_STRING} --gir ${GIR_FILE}
+	        --internal-vapi gtkmusic-internals-${VERSION}.vapi
+            --shared-library libgtkmusic.so.${SOVERSION}
+	        --library gtkmusic-${VERSION} --gir ${GIR_FILE}
 
-    GENERATE_VAPI gtkmusic-${VERSION_STRING}
+    GENERATE_VAPI gtkmusic-${VERSION}
     GENERATE_HEADER gtkmusic
 )
 
@@ -71,7 +77,8 @@ set(DEPS_INCLUDE_DIRS ${GTK3_INCLUDE_DIRS} ${GEE_INCLUDE_DIRS})
 set(DEPS_CFLAGS_OTHER ${GTK3_CFLAGS_OTHER} ${GEE_CFLAGS_OTHER})
 
 add_library(gtkmusic SHARED ${VALA_C_LIBGTKMUSIC})
-set_target_properties(gtkmusic PROPERTIES SOVERSION ${VERSION_STRING})
+set_target_properties(gtkmusic PROPERTIES SOVERSION ${SOVERSION})
+set_target_properties(gtkmusic PROPERTIES VERSION ${VERSION})
 target_link_libraries(gtkmusic ${DEPS_LIBRARIES})
 target_include_directories(gtkmusic PUBLIC ${DEPS_INCLUDE_DIRS})
 target_compile_options(gtkmusic PUBLIC ${DEPS_CFLAGS_OTHER})
@@ -90,7 +97,7 @@ install(TARGETS gtkmusic gtkmusic_static
                             WORLD_READ WORLD_EXECUTE
         ARCHIVE DESTINATION lib/static)
 install(FILES ${CMAKE_BINARY_DIR}/gtkmusic.h
-        DESTINATION include/gtkmusic-${VERSION_STRING})
+        DESTINATION include/gtkmusic-${VERSION})
 
 
 # =============================================================================
@@ -107,7 +114,6 @@ if(INTROSPECTION_FOUND)
         TARGET gtkmusic
         POST_BUILD
         COMMAND ${INTROSPECTION_COMPILER} 
-                --shared-library=libgtkmusic-${VERSION_STRING} 
                 -o ${TYPELIB_FILE} ${GIR_FILE}
         COMMENT "Creating GObject Introspection files"
     )

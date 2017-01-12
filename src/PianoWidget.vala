@@ -47,9 +47,9 @@ public class Piano : DrawingArea {
     //Signals
     //=========================================================================
     
-    public signal void note_pressed (Widget widget, Gdk.EventButton event,
+    public signal void note_pressed (Gdk.EventButton event,
                                      int midi_note); //ushort not supported
-    public signal void note_released (Widget widget, Gdk.EventButton event,
+    public signal void note_released (Gdk.EventButton event,
                                       int midi_note); //ushort not supported
   
     //=========================================================================
@@ -302,12 +302,12 @@ public class Piano : DrawingArea {
     //====Events===============================================================
     
     public override bool button_press_event (Gdk.EventButton event) {
-        note_pressed(this, event, point_to_midi(event.x, event.y));
+        note_pressed(event, point_to_midi(event.x, event.y));
         return true;
     }
     
     public override bool button_release_event (Gdk.EventButton event) {
-        note_released(this, event, point_to_midi(event.x, event.y));
+        note_released(event, point_to_midi(event.x, event.y));
         return true;
     }
     

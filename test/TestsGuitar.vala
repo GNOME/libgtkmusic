@@ -1,9 +1,8 @@
 using Gtk;
 using GtkMusic;
 
-void note_pressed_callback(Widget widget, Gdk.EventButton event, 
+void note_pressed_callback(Guitar guitar, Gdk.EventButton event, 
                            GuitarPosition pos) {
-    var guitar = widget as Guitar;
     stdout.printf("You clicked a %s!\n", guitar.position_to_note(pos));
     stdout.flush();
     if(event.button == 1) //left-click

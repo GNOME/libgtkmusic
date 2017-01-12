@@ -1,8 +1,7 @@
 using Gtk;
 using GtkMusic;
 
-void note_pressed_callback(Widget widget, Gdk.EventButton event, int key) {
-    var piano = widget as Piano;
+void note_pressed_callback(Piano piano, Gdk.EventButton event, int key) {
     stdout.printf("You clicked key %d  \n", key); stdout.flush();
     if(event.button == 1)
         piano.mark_midi((ushort) key);
