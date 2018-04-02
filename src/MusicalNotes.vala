@@ -12,6 +12,9 @@ public errordomain MusicalNoteError {
     ALREADY_COMPLETE
 }
 
+/**
+ * Musical notes utilities
+ */
 public class MusicalNotes {
     /**
      * Musical notes, without octaves
@@ -40,7 +43,7 @@ public class MusicalNotes {
     }
     
    /**
-    * Checks whether a note is valid
+    * Check whether a note is valid
     * @param note The note in scientific notation (as in E3)
     * @return True if the note is valid or false otherwise
     **/
@@ -55,7 +58,7 @@ public class MusicalNotes {
     }
 
    /**
-    * Checks whether a string represents a note without octave
+    * Check whether a string represents a note without octave
     * @param needle The string to be checked
     * @return True if it's a note without octave or false otherwise
     **/
@@ -67,7 +70,7 @@ public class MusicalNotes {
     }
     
     /**
-     * Returns all notes with a given name (map C to => C0, C1, C2, ...);
+     * Return all notes with a given name (map C to => C0, C1, C2, ...);
      * @param incompleteNote A note without its octave component
      * @return A set of all possible notes with this name
      **/
@@ -94,19 +97,22 @@ public class MusicalNotes {
     }
     
    /**
-    * Gets the note's MIDI code
+    * Get the note's MIDI code
     *
     * Algorithm:
     * A note, such as C#3 is decomposed into:
-    *  - the octave (3)
-    *  - the note name (C#)
-    * Each note name receives an index in the range 0..11 .
-    * The index is used as the "LSB" part of the note number and the octave
-    * is used as the "MSB" part of the number.
-    * An offset (12) is added so that A0=21
-    * A constraint is added so that the note is between 21 (A0) and 108 (C8)
     *
-    * @param note The note in scientific notation (with octave)
+    *  * the octave (3)
+    *  * the note name (C#)
+    *
+    * Each note name receives an index in the range 0..11 .
+    * The index is used as the lowest part of the note number and the octave
+    * is used as the most significant part of the number.
+    * An offset (12) is added so that A0=21.
+    * A constraint is added so that the note is between 21 (A0) and 108 (C8),
+    * resulting in valid MIDI codes.
+    *
+    * @param note The note in musical notation (with octave, e.g.: C#3)
     * @return The associated MIDI code
     **/
     public static short get_note_as_midi_code(string note) 
@@ -146,17 +152,17 @@ public class MusicalNotes {
 
 
     /**
-    * Gets the note's string from its MIDI code
+    * Get the note's string from its MIDI code
     *
     * This functions performs the inverse procedure of getting a MIDI code from
     * a scientific notation note string:
     * 
-    * 1. Subtract 18 from the MIDI code
-    * 2. Get the integer part of the division by 12 as the octave
-    * 3. Get the modulus division as the note index
-    * 4. Construct note indexing the note_names list and adding the octave
+    *  1. Subtract 18 from the MIDI code
+    *  2. Get the integer part of the division by 12 as the octave
+    *  3. Get the modulus division as the note index
+    *  4. Construct note indexing the note_names list and adding the octave
     *
-    * @param note The note valid MIDI code
+    * @param midi The note valid MIDI code
     * @return The note as a string or ""
     **/
     public static string get_note_from_midi_code(ushort midi) 
@@ -172,9 +178,10 @@ public class MusicalNotes {
         note += octave.to_string();
         return note;
     }
+
     
     /**
-     * Checks whether a given MIDI code is an accidental note (C#, D#, ...)
+     * Check whether a given MIDI code is an accidental note (C#, D#, ...)
      * @param midi The MIDI code of a note
      * @return Whether the note has an accidental
      **/
@@ -190,9 +197,10 @@ public class MusicalNotes {
                     return false;
             }      
     }
+
     
     /**
-     * Checks whether a given MIDI code is different of E or B
+     * Check whether a given MIDI code is different of E or B
      * @param midi The MIDI code of a note
      * @return Whether the note can have an accident (thus, neither E nor B)
      **/

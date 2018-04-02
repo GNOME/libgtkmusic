@@ -2,8 +2,6 @@ using Gtk;
 using Gee;
 
 //TODO Make a QCAD picture with all relevant dimensions and offsets
-//TODO API Documentation
-//TODO Library Makefile and installation instructions
 //TODO Labels font correction
 
 namespace GtkMusic {
@@ -12,11 +10,31 @@ namespace GtkMusic {
  * A guitar string with a particular tuning
  **/
 public class GuitarString {
-    public string note;
+    /**
+     * The note associated with this guitar string 
+     */
+    public string note; 
+    
+    /**
+     * Whether this note should be vibrating (sinusoidal movement animation) 
+     */
     public bool vibrate = false;
-    public double vibrateSeed;  //should be private with getter
+    
+    /**
+     * A random generator seed (vibration animation phase difference) 
+     */
+    public double vibrateSeed;  //should be private with getter ?
+    
+    /**
+     * Guitar string color as a RGBA array of floats 
+     */
     public float[] color = {0.1f, 0.1f, 0.1f, 1.0f};
+    
+    /**
+     * Label color as a RGBA array of floats 
+     */
     public float[] labelColor = {0.0f, 0.0f, 0.0f, 1.0f};
+    
     public GuitarString(string note) {
         this.note = note;
         vibrateSeed = Random.next_double();
@@ -27,15 +45,31 @@ public class GuitarString {
  * A fret mark used to highlight a fret
  **/
 public class GuitarFretMark {
+    /**
+     * The fret mark position 
+     */
     public ushort position;
+    
+    /**
+     * Available symbols to highlight a given position 
+     */
     public enum Style {
         NONE,
         SOLID_CIRCLE,
         RECTANGLE,
         FANCY
     }
+    
+    /**
+     * The current symbol to be used (defaults to NONE) 
+     */
     public Style style;
+    
+    /** 
+     * The fret mark color as an RGBA array of floats 
+     */
     public float[] color = {0.8f, 0.8f, 0.8f, 1.0f};
+    
     public GuitarFretMark(ushort position) {
         this.position = position;
     }
@@ -45,15 +79,26 @@ public class GuitarFretMark {
  * A guitar position, composed by the string index and the fret index
  **/
 public class GuitarPosition {
+
+    /** 
+     * The guitar string index [0,5] associated to this guitar position 
+     */
     public ushort stringIndex;
+    
+    /** 
+     * The fret index associated to this guitar position 
+     */
     public ushort fretIndex;
+    
     public GuitarPosition(ushort stringIndex, ushort fretIndex) {
         this.stringIndex = stringIndex;
         this.fretIndex = fretIndex;
-    }  
+    }
+      
     public static uint hash_func(GuitarPosition key) {
         return (13 + key.stringIndex) * 23 + key.fretIndex;
     }
+    
     public static bool equal_func(GuitarPosition a, GuitarPosition b) {
         if(a.stringIndex == b.stringIndex && a.fretIndex == b.fretIndex)
             return true;
@@ -63,15 +108,29 @@ public class GuitarPosition {
 
 /**
  * The Guitar widget
- **/
+ */
 public class Guitar : DrawingArea {
 
     //=========================================================================
     //Signals
     //=========================================================================
-    public signal void note_pressed (Gdk.EventButton event,
+    
+    /**
+     * Signal emitted when a note has been pressed with the mouse
+     * @param guitar The Guitar who trigerred the event
+     * @param event The Gdk low level event object
+     * @param pos The GuitarPosition (string and fret) of the pressed note
+     */
+    public signal void note_pressed (Guitar guitar, Gdk.EventButton event,
                                      GuitarPosition pos);
-    public signal void note_released (Gdk.EventButton event,
+                              
+    /**
+     * Signal emitted when a note has been released (mouse button released)
+     * @param guitar The Guitar who trigerred the event
+     * @param event The Gdk low level event object
+     * @param pos The GuitarPosition (string and fret) of the released note
+     */
+    public signal void note_released (Guitar guitar, Gdk.EventButton event,
                                       GuitarPosition pos);
     
     //=========================================================================
@@ -79,18 +138,59 @@ public class Guitar : DrawingArea {
     //=========================================================================
     
     //Behavior properties
-    public bool showLabels = true;      //Show string labels (e.g. EADGBE)
-    public bool detailedLabels = false; //Show octaves in labels (e.g. E4)
-    public bool highlightFirstFret = true; //Draw additional line in 1st fret
-    public bool autoUpdate = true; //Auto-redraw when a note is added
-    private bool shouldAnimate = false; //Whether the guitar should be animated
+    
+    /**
+     * Render string labels (e.g.: EADGBE) 
+     */
+    public bool showLabels = true;
+    
+    /**
+     * Show octaves in labels (e.g.: E4) 
+     */
+    public bool detailedLabels = false;
+    
+    /** 
+     * Draw additional line in 1st fret 
+     */
+    public bool highlightFirstFret = true;
+    
+    /** 
+     * Auto-redraw when a note is added (disable for manual management) 
+     */
+    public bool autoUpdate = true; 
+    
+    /** 
+     * Whether the guitar should be animated (string vibrations)
+     */
+    private bool shouldAnimate = false;
     
     //Grid properties
-    public ushort fretNumber = 17; //Number of frets
+
+    /** 
+     * Number of frets 
+     */
+    public ushort fretNumber = 17;
+
     //public float[] gridBgColor = {0.57f, 0.39f, 0.30f, 1.0f};
+
+    /**
+     * Grid background color as a RGBA array of floats
+     */
     public float[] gridBgColor = {0.486f, 0.309f, 0.251f, 1.0f};
+
+    /** 
+     * Fret color as a RGBA array of floats 
+     */
     public float[] fretColor = {0.6f, 0.6f, 0.6f, 1.0f};
+
+    /** 
+     * Collection of strings 
+     */
     public ArrayList<GuitarString> guitarStrings;
+
+    /**
+     * Collection of fret marks 
+     */
     public HashSet<GuitarFretMark> fretMarks;
     
     //Advanced style properties
@@ -100,12 +200,19 @@ public class Guitar : DrawingArea {
     //Marked Notes
     //=========================================================================
     
+    /** 
+     * Style for marked notes 
+     */
     public class MarkedNoteStyle {
         public float[] color = {0.0f, 0.0f, 0.0f, 1.0f};
         public MarkedNoteStyle(float[] color) {
             this.color = color;
         }
     }
+
+    /** 
+     * Marked notes dictionary (position and mark style) 
+     */
     public HashMap<GuitarPosition, MarkedNoteStyle> markedNotes;
     
     //=========================================================================
@@ -133,7 +240,7 @@ public class Guitar : DrawingArea {
     //=========================================================================
     
    /**
-    * Creates a new Guitar widget, which minimum size is defined to 170x60
+    * Create a new Guitar widget, which minimum size is defined to 170x60
     **/
     public Guitar () {
         //stdout.printf("Creating guitar [START]..."); stdout.flush();
@@ -156,16 +263,25 @@ public class Guitar : DrawingArea {
     //Animation related
     //=========================================================================
     
+    /**
+     * Start the animation on strings set to vibrate
+     */ 
     public void start_animation() {
         shouldAnimate = true;
         Timeout.add (10, update_animation);
     }
     
+    /**
+     * Stop the string vibration animation
+     */
     public void stop_animation() {
         shouldAnimate = false;
         animateInstant = 0;
     }
     
+    /**
+     * Draw a new frame of the vibration animation
+     */
     private bool update_animation() {
         animateInstant += 0.3f;
         redraw();
@@ -175,7 +291,7 @@ public class Guitar : DrawingArea {
     //====Marking-related======================================================
     
    /**
-    * Highlights a position (string and fret) in the instrument
+    * Highlight a position (string and fret) in the instrument
     * @param stringIndex The string number (top string equals to 0)
     * @param fretIndex The fret number
     **/
@@ -188,8 +304,8 @@ public class Guitar : DrawingArea {
     }
 
    /**
-    * Removes the mark of a position (string and fret) in the instrument
-    * @param stringIndex The string number (top string equals to 0)
+    * Remove the mark of a position (string and fret) in the instrument
+    * @param stringIndex The string number (topmost string equals to 0)
     * @param fretIndex The fret number
     **/    
     public void unmark_position(ushort stringIndex, ushort fretIndex) {
@@ -201,7 +317,7 @@ public class Guitar : DrawingArea {
     }
     
    /**
-    * Removes all marked notes in the Guitar view
+    * Remove all marked notes in the Guitar view
     **/ 
     public void unmark_all() {
         markedNotes.clear();
@@ -210,7 +326,7 @@ public class Guitar : DrawingArea {
     }
     
    /**
-    * Highlights all positions corresponding to a note
+    * Highlight all positions corresponding to a note
     * @param note A musical note in scientific notation (examples: F#4 , C)
     **/
     public void mark_note(string note, 
@@ -228,7 +344,7 @@ public class Guitar : DrawingArea {
     }
     
    /**
-    * Removes the marks in all positions corresponding to a note
+    * Remove the marks in all positions corresponding to a note
     * @param note A musical note in scientific notation (examples: F#4 , C)
     **/    
     public void unmark_note(string note) {
@@ -247,7 +363,7 @@ public class Guitar : DrawingArea {
     //=====Coordinates and units related (Note <--> GuitarPosition <--> x,y)===
     
     /**
-     * Computes the fret index to accomplish a given note in a given string
+     * Compute the fret index to accomplish a given note in a given string
      * @param stringIndex The guitar string index
      * @param note The musical note in scientific notation
      * @return The position where the note can be found or -1
@@ -263,7 +379,7 @@ public class Guitar : DrawingArea {
     }
     
    /**
-    * Finds all positions of a given note
+    * Find all positions of a given note
     * @param note The note with or without the octave component (e.g: A#, D4)
     **/
     public HashSet<GuitarPosition>? find_positions(string note) {
@@ -297,7 +413,7 @@ public class Guitar : DrawingArea {
     }
     
    /**
-    * Gets a MIDI code from a guitar position
+    * Get a MIDI code from a guitar position
     **/
     public ushort position_to_midi(GuitarPosition position) {
         string first_note = guitarStrings[position.stringIndex].note;
@@ -315,7 +431,7 @@ public class Guitar : DrawingArea {
     }
 
     /**
-     * Finds the guitar position associated to a point
+     * Find the guitar position associated to a point
      * @param x The x coordinate of the point
      * @param y The y coordinate of the point
      **/    
@@ -349,26 +465,26 @@ public class Guitar : DrawingArea {
    /**
     * Customized button_press_event
     *
-    * Adds the current position and note to the standard button-press event and
+    * Add the current position and note to the standard button-press event and
     * emits a note_pressed signal.
     **/
     public override bool button_press_event (Gdk.EventButton event) {
         GuitarPosition? pos = point_to_position(event.x, event.y);
         if(pos != null)
-            note_pressed(event, pos);
+            note_pressed(this, event, pos);
         return true;
     }
 
    /**
     * Customized button_released_event
     *
-    * Adds the current position and note to the standard button-release event 
+    * Add the current position and note to the standard button-release event 
     * and emits a note_released signal.
     **/
     public override bool button_release_event (Gdk.EventButton event) {
         GuitarPosition? pos = point_to_position(event.x, event.y);
         if(pos != null)
-            note_released(event, pos);
+            note_released(this, event, pos);
         return true;   
     }
 
@@ -376,7 +492,7 @@ public class Guitar : DrawingArea {
     //====Drawing methods======================================================
     
    /**
-    * Draws a guitar widget
+    * Draw the guitar widget
     *
     * @param cr The drawing context for the widget
     * @return Whether the event should be propagated (TODO Confirm this theory)
@@ -436,7 +552,6 @@ public class Guitar : DrawingArea {
     }
     
     
-    
    /**
     * Draw guitar strings according to its style properties
     * @param cr The drawing context for the widget
@@ -481,7 +596,7 @@ public class Guitar : DrawingArea {
    /**
     * Draw guitar frets
     * @param cr The drawing context for the widget
-    **/  
+    */  
     private void draw_frets(Cairo.Context cr) {
         cr.save();
         cr.set_source_rgba(fretColor[0], fretColor[1], 
@@ -506,7 +621,7 @@ public class Guitar : DrawingArea {
    /**
     * Draw fret marks
     * @param cr The drawing context for the widget
-    **/  
+    */  
     private void draw_fret_marks(Cairo.Context cr) {
         if(fretMarks.size == 0)
             return;
@@ -521,11 +636,12 @@ public class Guitar : DrawingArea {
         cr.fill();
         cr.restore();
     }
+
     
    /**
     * Draw marked notes
     * @param cr The drawing context for the widget
-    **/  
+    */  
     private void draw_marked_notes(Cairo.Context cr) {
         if(markedNotes.size == 0)
             return;
@@ -543,13 +659,14 @@ public class Guitar : DrawingArea {
         cr.restore();
     }
 
+
     /**
-    * Forces a complete redraw of the widget
+    * Force a complete redraw of the widget
     *
     * This function will invalidate all the region corresponding to the
     * widget's GDK window and ask for updates, forcing a complete redraw.
     *
-    **/
+    */
     public void redraw () {
         var window = get_window ();
         if (null == window) {

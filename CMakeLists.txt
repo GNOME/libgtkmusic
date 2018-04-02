@@ -151,6 +151,20 @@ if(CREATE_GLADE_CATALOG)
     endif(XMLLINT_FOUND)
 endif(CREATE_GLADE_CATALOG)
 
+# =============================================================================
+# Documentation
+# =============================================================================
+find_program(VALADOC valadoc)
+set(VALADOC_FOUND NO)
+if(VALADOC)
+  set(VALADOC_FOUND YES)
+  add_custom_target(doc ${VALADOC} --force 
+                        -b ${CMAKE_SOURCE_DIR}/src -o ${CMAKE_BINARY_DIR}/doc
+                        --pkg gee-0.8 --pkg cairo --pkg gdk-3.0 --pkg gtk+-3.0
+                        --package-name=gtkmusic --package-version=0.4
+                    COMMENT "Make API Reference with ValaDoc")
+endif()
+option(DOCUMENTATION "Whether to make API reference" ${VALADOC_FOUND})
 
 # =============================================================================
 # Test utilities
@@ -215,6 +229,6 @@ message("Main Library        ON (always)")
 message("GI Typelib          ${CREATE_GIR}")
 message("Glade Catalog       ${CREATE_GLADE_CATALOG}")
 message("Executables (Tests) ${BUILD_TESTS}")
-message("Documentation       OFF")
+message("Documentation       ${DOCUMENTATION}")
 message("------------------------------------------------------------------")
 message("")

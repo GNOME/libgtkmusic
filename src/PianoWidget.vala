@@ -2,7 +2,6 @@ using Gtk;
 using Gee;
 
 //TODO Make a QCAD picture with all relevant dimensions and offsets
-//TODO API Documentation
 //TODO Library Makefile and installation instructions
 //TODO Labels
 
@@ -34,6 +33,9 @@ using Gee;
 
 namespace GtkMusic {
 
+/** 
+ * Piano widget custom errors 
+ */
 public errordomain PianoError {
     INVALID_COORDINATES
 }
@@ -47,10 +49,23 @@ public class Piano : DrawingArea {
     //Signals
     //=========================================================================
     
-    public signal void note_pressed (Gdk.EventButton event,
-                                     int midi_note); //ushort not supported
-    public signal void note_released (Gdk.EventButton event,
-                                      int midi_note); //ushort not supported
+    /**
+     * Signal emitted when a note has been pressed with the mouse
+     * @param piano The Piano who trigerred the event
+     * @param event The Gdk low level event object
+     * @param midi_note The MIDI value (number) of the pressed note
+     */
+    public signal void note_pressed (Piano widget, Gdk.EventButton event,
+                                     int midi_note); //ushort not supported?
+
+    /**
+     * Signal emitted when a note has been released (mouse button released)
+     * @param piano The Piano who trigerred the event
+     * @param event The Gdk low level event object
+     * @param midi_note The MIDI value (number) of the released note
+     */
+    public signal void note_released (Piano piano, Gdk.EventButton event,
+                                      int midi_note); //ushort not supported?
   
     //=========================================================================
     //Properties
@@ -100,7 +115,7 @@ public class Piano : DrawingArea {
     //=========================================================================
    
    /**
-    * Creates a new Piano widget, which minimum size is defined to 120x40
+    * Create a new Piano widget, which minimum size is defined to 120x40
     **/
     public Piano() {
         add_events (Gdk.EventMask.BUTTON_PRESS_MASK
@@ -112,7 +127,7 @@ public class Piano : DrawingArea {
     //====Marking-related======================================================
     
    /**
-    * Highlights a key corresponding to a MIDI code
+    * Highlight a key corresponding to a MIDI code
     * @param midi_note A valid MIDI code (in range: 21 .. 108)
     * @param color The color (in RGBA []) to fill the marked key (default: blue)
     **/
@@ -124,7 +139,7 @@ public class Piano : DrawingArea {
     }
     
    /**
-    * Removes the mark of a position (string and fret) in the instrument
+    * Remove the mark of a position in the instrument
     * @param midi_note A valid MIDI code (in range: 21 .. 108)
     **/
     public void unmark_midi(ushort midi_note) {
@@ -135,7 +150,7 @@ public class Piano : DrawingArea {
     }
     
    /**
-    * Highlights all positions corresponding to a note
+    * Highlight all positions corresponding to a note
     * @param note A musical note in scientific notation (examples: F#4 , C)
     **/
     public void mark_note(string note,
@@ -157,7 +172,7 @@ public class Piano : DrawingArea {
     }
 
    /**
-    * Removes the marks in all positions corresponding to a note
+    * Remove the marks in all positions corresponding to a note
     * @param note A musical note in scientific notation (examples: F#4 , C)
     **/
     public void unmark_note(string note) {
@@ -178,7 +193,7 @@ public class Piano : DrawingArea {
     }
     
    /**
-    * Removes all marked notes in the Piano view
+    * Remove all marked notes in the Piano view
     **/ 
     public void unmark_all() {
         markedNotes.clear();
@@ -189,7 +204,7 @@ public class Piano : DrawingArea {
     //====Coordinates or calculus related======================================
 
     /**
-     * Gets the MIDI code corresponding to a point (x,y) in the widget
+     * Get the MIDI code corresponding to a point (x,y) in the widget
      * @param x Valid x coordinate
      * @param y Valid y coordinate
      **/    
@@ -242,7 +257,7 @@ public class Piano : DrawingArea {
     }
     
     /**
-     * Gets the x coordinate of the key associated to a given MIDI code
+     * Get the x coordinate of the key associated to a given MIDI code
      * @param midi_code A valid MIDI code, present in the piano range
      **/
     public double midi_to_x(ushort midi_code) {
@@ -261,7 +276,7 @@ public class Piano : DrawingArea {
     }
     
    /**
-    * Finds all MIDI codes for a given note
+    * Find all MIDI codes for a given note
     * @param note The note with or without the octave component (e.g: A#, D4)
     **/
     public HashSet<ushort>? find_positions(string note) {
@@ -281,7 +296,7 @@ public class Piano : DrawingArea {
     }
     
     /**
-     * Returns the number of natural keys for the current instance parameters
+     * Return the number of natural keys for the current instance parameters
      * @return The number of natural keys
      **/
     private ushort get_natural_keys_count() {
@@ -301,24 +316,36 @@ public class Piano : DrawingArea {
     
     //====Events===============================================================
     
+   /**
+    * Customized button_press_event
+    *
+    * Add the current position and note to the standard button-press event and
+    * emits a note_pressed signal.
+    */
     public override bool button_press_event (Gdk.EventButton event) {
-        note_pressed(event, point_to_midi(event.x, event.y));
+        note_pressed(this, event, point_to_midi(event.x, event.y));
         return true;
     }
     
+   /**
+    * Customized button_released_event
+    *
+    * Add the current position and note to the standard button-release event 
+    * and emits a note_released signal.
+    */
     public override bool button_release_event (Gdk.EventButton event) {
-        note_released(event, point_to_midi(event.x, event.y));
+        note_released(this, event, point_to_midi(event.x, event.y));
         return true;
     }
     
     //====Drawing methods======================================================
     
    /**
-    * Draws a guitar widget
+    * Draw the piano widget
     *
     * @param cr The drawing context for the widget
     * @return Whether the event should be propagated (TODO Confirm this theory)
-    **/
+    */
     public override bool draw (Cairo.Context cr) {
         calculate_dimensions(cr);
         draw_natural_keys(cr);
@@ -327,12 +354,12 @@ public class Piano : DrawingArea {
     }
     
     /**
-    * Forces a complete redraw of the widget
+    * Force a complete redraw of the widget
     *
     * This function will invalidate all the region corresponding to the
     * widget's GDK window and ask for updates, forcing a complete redraw.
     *
-    **/
+    */
     public void redraw () {
         var window = get_window ();
         if (null == window) {
@@ -346,7 +373,7 @@ public class Piano : DrawingArea {
    /**
     * Calculate some drawing dimensions
     * @param cr The drawing context for the widget
-    **/
+    */
     private void calculate_dimensions(Cairo.Context cr) {
         width = get_allocated_width (); //total width for the widget
         height = get_allocated_height (); //total height for the widget
@@ -369,7 +396,7 @@ public class Piano : DrawingArea {
    /**
     * Draw natural notes (C, D, E, F, G, A, B)
     * @param cr The drawing context for the widget
-    **/
+    */
     private void draw_natural_keys(Cairo.Context cr) {
         double x = piano_x;
         double y = piano_y;
@@ -405,7 +432,7 @@ public class Piano : DrawingArea {
    /**
     * Draw natural notes (C#, D#, F#, G#, A#)
     * @param cr The drawing context for the widget
-    **/
+    */
     private void draw_accident_keys(Cairo.Context cr) {
         double x = piano_x;
         double y = piano_y;
