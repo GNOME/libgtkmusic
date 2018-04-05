@@ -55,7 +55,7 @@ public class Piano : DrawingArea {
      * @param event The Gdk low level event object
      * @param midi_note The MIDI value (number) of the pressed note
      */
-    public signal void note_pressed (Piano widget, Gdk.EventButton event,
+    public signal void note_pressed (Piano piano, Gdk.EventButton event,
                                      int midi_note); //ushort not supported?
 
     /**

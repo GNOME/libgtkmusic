@@ -1,0 +1,8 @@
+option('tests', type: 'boolean', value: true,
+		description: 'Whether to build tests')
+option('glade', type: 'boolean', value: true,
+		description: 'Whether to install the Glade catalog')
+option('doc', type : 'boolean', value : true,
+		description : 'Whether to create Valadoc based documentation')
+option('typelib', type : 'boolean', value : true, 
+		description : 'Whether to create GIR Typelib File')
