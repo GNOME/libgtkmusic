@@ -51,20 +51,18 @@ public class Piano : DrawingArea {
     
     /**
      * Signal emitted when a note has been pressed with the mouse
-     * @param piano The Piano who trigerred the event
      * @param event The Gdk low level event object
      * @param midi_note The MIDI value (number) of the pressed note
      */
-    public signal void note_pressed (Piano piano, Gdk.EventButton event,
+    public signal void note_pressed (Gdk.EventButton event,
                                      int midi_note); //ushort not supported?
 
     /**
      * Signal emitted when a note has been released (mouse button released)
-     * @param piano The Piano who trigerred the event
      * @param event The Gdk low level event object
      * @param midi_note The MIDI value (number) of the released note
      */
-    public signal void note_released (Piano piano, Gdk.EventButton event,
+    public signal void note_released (Gdk.EventButton event,
                                       int midi_note); //ushort not supported?
   
     //=========================================================================
@@ -323,7 +321,7 @@ public class Piano : DrawingArea {
     * emits a note_pressed signal.
     */
     public override bool button_press_event (Gdk.EventButton event) {
-        note_pressed(this, event, point_to_midi(event.x, event.y));
+        note_pressed(event, point_to_midi(event.x, event.y));
         return true;
     }
     
@@ -334,7 +332,7 @@ public class Piano : DrawingArea {
     * and emits a note_released signal.
     */
     public override bool button_release_event (Gdk.EventButton event) {
-        note_released(this, event, point_to_midi(event.x, event.y));
+        note_released(event, point_to_midi(event.x, event.y));
         return true;
     }
     

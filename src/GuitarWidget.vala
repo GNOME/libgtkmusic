@@ -117,20 +117,18 @@ public class Guitar : DrawingArea {
     
     /**
      * Signal emitted when a note has been pressed with the mouse
-     * @param guitar The Guitar who trigerred the event
      * @param event The Gdk low level event object
      * @param pos The GuitarPosition (string and fret) of the pressed note
      */
-    public signal void note_pressed (Guitar guitar, Gdk.EventButton event,
+    public signal void note_pressed (Gdk.EventButton event,
                                      GuitarPosition pos);
                               
     /**
      * Signal emitted when a note has been released (mouse button released)
-     * @param guitar The Guitar who trigerred the event
      * @param event The Gdk low level event object
      * @param pos The GuitarPosition (string and fret) of the released note
      */
-    public signal void note_released (Guitar guitar, Gdk.EventButton event,
+    public signal void note_released (Gdk.EventButton event,
                                       GuitarPosition pos);
     
     //=========================================================================
@@ -471,7 +469,7 @@ public class Guitar : DrawingArea {
     public override bool button_press_event (Gdk.EventButton event) {
         GuitarPosition? pos = point_to_position(event.x, event.y);
         if(pos != null)
-            note_pressed(this, event, pos);
+            note_pressed(event, pos);
         return true;
     }
 
@@ -484,7 +482,7 @@ public class Guitar : DrawingArea {
     public override bool button_release_event (Gdk.EventButton event) {
         GuitarPosition? pos = point_to_position(event.x, event.y);
         if(pos != null)
-            note_released(this, event, pos);
+            note_released(event, pos);
         return true;   
     }
 
