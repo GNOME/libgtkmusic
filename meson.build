@@ -77,14 +77,14 @@ sources = [
     'src/MusicalNotes.vala', 
     'src/PianoWidget.vala'
 ]
+header_dir = 'include/gtkmusic-'+version
 libgtkmusic = library('gtkmusic', sources,
                         vala_gir: gir_file,
                         vala_vapi: vapi_file,
                         dependencies: deps,
                         version: version,
-                        soversion: version_major,
                         install: true,
-                        install_dir: [true, true, true, true]
+                        install_dir: [true, header_dir, true, true]
 )
 
 
@@ -97,7 +97,8 @@ if get_option('typelib')
         enable_typelib = true
         custom_target('gtkmusic typelib', 
             command: [
-                g_ir_compiler, '--shared-library', libgtkmusic.full_path(),
+                g_ir_compiler, '--shared-library', 
+                join_paths(get_option('libdir'), 'libgtkmusic.so'), # small hack
                 '--output', '@OUTPUT@', join_paths(build_dir, gir_file)],
             output: typelib_file,
             depends: libgtkmusic,
@@ -135,7 +136,8 @@ if get_option('glade') # and libgladeui found
                 error('Invalid XML file found!')
             endif
             install_data(xml_path, install_dir: glade_catalog_dir)
-            install_subdir(pixmaps_path, install_dir: glade_pixmap_dir)
+            install_subdir(pixmaps_path, install_dir: glade_pixmap_dir,
+                           strip_directory: true)
             
         else
             warning('XMLLint not found. Skipping Glade catalog validation.')
