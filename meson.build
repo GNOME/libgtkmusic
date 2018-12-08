@@ -3,7 +3,7 @@
 # ============================================================================
 project('libgtkmusic', ['vala', 'c'],
          version: '0.4',
-         meson_version: '>= 0.43.0')
+         meson_version: '>= 0.44.0')
 
 author_name = 'Leandro Resende Mattioli'
 author_email = 'leandro.mattioli@gmail.com'

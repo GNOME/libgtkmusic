@@ -1,18 +1,28 @@
 Suggested installation method
+=============================
 
-Dependencies (Ubuntu package names):
+OS Dependencies (Ubuntu package names):
 	libgee-0.8-dev
 	libgee-0.8-2
 	valac-0.30 (or newer)
 
-Optional Features
+OS Optional Features
 	gobject-introspection
 	libgirepository
 	libgladeui-dev
 
-Assuming that cmake and all dependencies are installed, run:
-	mkdir build
+Python Required Packages
+	meson
+
+1) Install dependencies
+	sudo apt install libgee-0.8-dev libgee-0.8-2 valac-0.30
+	pip3 install --user meson
+2) [OPTIONAL] Install additional packages
+	sudo apt install gobject-introspection libgirepository libgladeui-dev
+3) Build library and test projects
+	meson build
 	cd build
-	cmake ..
-	make
-	sudo make install
+	ninja
+4) Install to the system
+	sudo ninja install
+	
