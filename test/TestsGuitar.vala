@@ -6,9 +6,9 @@ void note_pressed_callback(Guitar guitar, Gdk.EventButton event,
     stdout.printf("You clicked a %s!\n", guitar.position_to_note(pos));
     stdout.flush();
     if(event.button == 1) //left-click
-        guitar.mark_position(pos.stringIndex, pos.fretIndex);
+        guitar.mark_position(pos.string_index, pos.fret_index);
     else
-        guitar.unmark_position(pos.stringIndex, pos.fretIndex);
+        guitar.unmark_position(pos.string_index, pos.fret_index);
 }
 
 int main(string[] args) {
@@ -16,8 +16,8 @@ int main(string[] args) {
     var window = new Window ();
     var guitar = new Guitar ();
     guitar.note_pressed.connect(note_pressed_callback);
-    guitar.guitarStrings[0].vibrate = true;
-    guitar.guitarStrings[5].vibrate = true;
+    guitar.guitar_strings[0].vibrate = true;
+    guitar.guitar_strings[5].vibrate = true;
     guitar.start_animation();
     guitar.mark_position(0, 0, {0.4f, 0.0f, 0.0f, 1.0f});
     guitar.mark_position(1, 1);

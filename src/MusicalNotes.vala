@@ -19,8 +19,8 @@ public class MusicalNotes {
     /**
      * Musical notes, without octaves
      **/
-    public const string[] note_names = { "C", "C#", "D", "D#", "E", "F", 
-                                      "F#", "G", "G#", "A", "A#", "B" };
+    public const string[] NOTE_NAMES = { "C", "C#", "D", "D#", "E", "F", 
+                                         "F#", "G", "G#", "A", "A#", "B" };
     
     /**
      * All standard diatonic intervals, in order.
@@ -63,8 +63,8 @@ public class MusicalNotes {
     * @return True if it's a note without octave or false otherwise
     **/
     public static bool is_incomplete(string needle) {
-        for(var i = 0 ; i < note_names.length ; i++)
-            if(note_names[i] == needle)
+        for(var i = 0 ; i < NOTE_NAMES.length ; i++)
+            if(NOTE_NAMES[i] == needle)
                 return true;
         return false;
     }
@@ -135,8 +135,8 @@ public class MusicalNotes {
             throw new MusicalNoteError.INVALID_NOTE("Invalid octave!");
         high = (short) octave.digit_value();            //Saving "MSB"
         note_name = note[0 : note.length - 1];
-        for(var i = 0 ; i < note_names.length ; i++) {
-            if(note_names[i] == note_name) {
+        for(var i = 0 ; i < NOTE_NAMES.length ; i++) {
+            if(NOTE_NAMES[i] == note_name) {
                 low = i;                     //Getting "LSB"
                 break;
             }
@@ -160,7 +160,7 @@ public class MusicalNotes {
     *  1. Subtract 18 from the MIDI code
     *  2. Get the integer part of the division by 12 as the octave
     *  3. Get the modulus division as the note index
-    *  4. Construct note indexing the note_names list and adding the octave
+    *  4. Construct note indexing the NOTE_NAMES list and adding the octave
     *
     * @param midi The note valid MIDI code
     * @return The note as a string or ""
@@ -174,7 +174,7 @@ public class MusicalNotes {
         midi -= 12;
         ushort octave = (ushort) (midi / 12);
         ushort note_index = (ushort) (midi % 12);
-        string note = note_names[note_index];
+        string note = NOTE_NAMES[note_index];
         note += octave.to_string();
         return note;
     }

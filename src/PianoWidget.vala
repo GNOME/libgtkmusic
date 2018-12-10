@@ -2,7 +2,6 @@ using Gtk;
 using Gee;
 
 //TODO Make a QCAD picture with all relevant dimensions and offsets
-//TODO Library Makefile and installation instructions
 //TODO Labels
 
 /* 
@@ -11,9 +10,9 @@ using Gee;
     => low, the implementation of MusicalNotes.midi_is_accident is "cheap"
  - what's the cost of getting the x coordinates for a MIDI code ?
     => low, little math in a loop with a maximum of 12-iterations
- - iterate markedNotes hash map VS check for keys while iterating in the other
+ - iterate marked_notes hash map VS check for keys while iterating in the other
    draw routines
-    => iterate markedNotes, if done only once, seems less expensive
+    => iterate marked_notes, if done only once, seems less expensive
  - what's the cost of replacing rectangles by polygons for natural keys ?
     => the polygon form depends whether the key is preceeded or followed by
        an accident.
@@ -69,25 +68,68 @@ public class Piano : DrawingArea {
     //Properties
     //=========================================================================
     
+    /**
+     * Possible keys labels positions
+     */
     public enum LabelPosition {
         UP,
         DOWN
     }
-    public bool autoUpdate = true;
-    public ushort key_count = 24;   //Number of keys
-    public ushort firstNote = 36;  //C2
+
+    /**
+     * Automatically redraw the piano whenever there's a change
+     */
+    public bool auto_update = true;
+
+    /**
+     * Number of keys
+     */
+    public ushort key_count = 24;
+
+    /**
+     * MIDI Code of the first key's note (Defaults to C2)
+     */
+    public ushort first_note = 36;  //C2
+
+    /**
+     * RGBA color used to draw natural keys
+     */
     public float[] nat_key_color = {1.0f, 1.0f, 1.0f, 1.0f};
+
+    /**
+     * RGBA color used to draw accident keys
+     */
     public float[] accident_key_color = {0.0f, 0.0f, 0.0f, 1.0f};
-    public bool showLabels = false;      //Show note labels
-    public bool detailedLabels = false; //Show octaves in labels (e.g. E4)
-    public LabelPosition labelsPosition = LabelPosition.UP;
+
+    /**
+     * Whether note names should be drawn
+     */
+    public bool show_labels = false;
+    
+    /**
+     * Show octaves should be added in labels (e.g. E4)
+     */
+    public bool detailed_labels = false;
+
+    /**
+     * Labels position
+     */
+    public LabelPosition labels_position = LabelPosition.UP;
+
+    /**
+     * A style for a given marked note (currently only a color)
+     */
     public class MarkedNoteStyle {
-        public float[] color = {0.0f, 0.0f, 0.0f, 1.0f};
+        public float[] color = {0.5f, 0.5f, 0.5f, 1.0f};
         public MarkedNoteStyle(float[] color) {
             this.color = color;
         }
     }
-    public HashMap<ushort, MarkedNoteStyle> markedNotes;
+
+    /**
+     * Dictionary of marked notes
+     */
+    public HashMap<ushort, MarkedNoteStyle> marked_notes;
     
     //=========================================================================
     //Private properties
@@ -97,7 +139,6 @@ public class Piano : DrawingArea {
     private ushort v_padding = 2;
     private float accident_key_height = 0.7f;
     private float accident_key_width = 0.4f;
-    private float x_min_natk_dist = 0.1f;
     private ushort nat_keys;
     private double piano_width;
     private double piano_height;
@@ -112,27 +153,27 @@ public class Piano : DrawingArea {
     //Methods
     //=========================================================================
    
-   /**
-    * Create a new Piano widget, which minimum size is defined to 120x40
-    **/
+    /**
+     * Create a new Piano widget, which minimum size is defined to 120x40
+     **/
     public Piano() {
-        add_events (Gdk.EventMask.BUTTON_PRESS_MASK
-                  | Gdk.EventMask.BUTTON_RELEASE_MASK);
+        /* add_events (Gdk.EventMask.BUTTON_PRESS_MASK
+                  | Gdk.EventMask.BUTTON_RELEASE_MASK); */
+        marked_notes = new HashMap<ushort, MarkedNoteStyle> ();
         set_size_request (120, 40);  //minimum widget size
-        markedNotes = new HashMap<ushort, MarkedNoteStyle> ();
     }
     
     //====Marking-related======================================================
     
-   /**
-    * Highlight a key corresponding to a MIDI code
-    * @param midi_note A valid MIDI code (in range: 21 .. 108)
-    * @param color The color (in RGBA []) to fill the marked key (default: blue)
-    **/
+    /**
+     * Highlight a key corresponding to a MIDI code
+     * @param midi_note A valid MIDI code (in range: 21 .. 108)
+     * @param color The color (in RGBA []) to fill the marked key (default: blue)
+     **/
     public void mark_midi(ushort midi_note, 
                           float[] color = {0.0f, 0.0f, 0.5f, 1.0f}) {
-        markedNotes[midi_note] = new MarkedNoteStyle(color);
-        if(autoUpdate)
+        marked_notes[midi_note] = new MarkedNoteStyle(color);
+        if(auto_update)
             redraw();     
     }
     
@@ -141,9 +182,9 @@ public class Piano : DrawingArea {
     * @param midi_note A valid MIDI code (in range: 21 .. 108)
     **/
     public void unmark_midi(ushort midi_note) {
-        if(markedNotes.has_key(midi_note))
-            markedNotes.unset(midi_note);
-        if(autoUpdate)
+        if(marked_notes.has_key(midi_note))
+            marked_notes.unset(midi_note);
+        if(auto_update)
             redraw();    
     }
     
@@ -153,7 +194,7 @@ public class Piano : DrawingArea {
     **/
     public void mark_note(string note,
                           float[] color = {0.0f, 0.0f, 0.5f, 1.0f}) {
-        bool oldAutoUpdate = autoUpdate;
+        bool old_auto_update = auto_update;
 
         //Preparing list of keys to mark
         var positions = find_positions(note);
@@ -162,10 +203,10 @@ public class Piano : DrawingArea {
         
         //Adding keys to marked notes
         foreach(ushort u in positions)
-            markedNotes[u] = new MarkedNoteStyle(color);
+            marked_notes[u] = new MarkedNoteStyle(color);
         
-        autoUpdate = oldAutoUpdate;
-        if(autoUpdate)
+        auto_update = old_auto_update;
+        if(auto_update)
             redraw();
     }
 
@@ -174,7 +215,7 @@ public class Piano : DrawingArea {
     * @param note A musical note in scientific notation (examples: F#4 , C)
     **/
     public void unmark_note(string note) {
-        bool oldAutoUpdate = autoUpdate;
+        bool old_auto_update = auto_update;
         
         //Preparing list of keys to unmark
         var positions = find_positions(note);
@@ -183,10 +224,10 @@ public class Piano : DrawingArea {
         
         //Adding keys to marked notes
         foreach(ushort u in positions)
-            markedNotes.unset(u);
+            marked_notes.unset(u);
 
-        autoUpdate = oldAutoUpdate;
-        if(autoUpdate)
+        auto_update = old_auto_update;
+        if(auto_update)
             redraw();  
     }
     
@@ -194,8 +235,8 @@ public class Piano : DrawingArea {
     * Remove all marked notes in the Piano view
     **/ 
     public void unmark_all() {
-        markedNotes.clear();
-        if(autoUpdate)
+        marked_notes.clear();
+        if(auto_update)
             redraw();
     }
     
@@ -214,7 +255,7 @@ public class Piano : DrawingArea {
         ushort r1_key, r2_key, r3_key; //regions (top-left, middle, top-right)
         bool curr_accident; //current note is an accident
         bool next_accident; //note after a horizontal step is an accident
-        for(var i = firstNote ; i < firstNote + key_count ; i++) {
+        for(var i = first_note ; i < first_note + key_count ; i++) {
             delta_x = x - midi_to_x(i);
             
             if(delta_x < key_width) {                     // in close region
@@ -259,8 +300,8 @@ public class Piano : DrawingArea {
      * @param midi_code A valid MIDI code, present in the piano range
      **/
     public double midi_to_x(ushort midi_code) {
-        ushort norm_key = midi_code - firstNote;
-        if(norm_key < 0 || norm_key > (firstNote + key_count))
+        ushort norm_key = midi_code - first_note;
+        if(norm_key < 0 || norm_key > (first_note + key_count))
             return -1; //TODO Throw exception ??
         double x = piano_x;
         x += (int) (norm_key / 12) * 7 * key_width; //skipping octaves
@@ -303,7 +344,7 @@ public class Piano : DrawingArea {
         ushort nat_keys = complete_octaves * 7; //7 natural-notes per octave
         ushort tmp_note;
         for(var i = 0; i < incomplete_octave; i++) { //iterating rem. keys
-            tmp_note = (firstNote + i) % 12; //normalized offset
+            tmp_note = (first_note + i) % 12; //normalized offset
             if(!MusicalNotes.midi_is_accident(tmp_note))
                 nat_keys += 1;   
         }
@@ -365,7 +406,6 @@ public class Piano : DrawingArea {
         }
         Cairo.Region region = window.get_clip_region ();
         window.invalidate_region (region, true);
-        window.process_updates (true);
     }
     
    /**
@@ -375,7 +415,7 @@ public class Piano : DrawingArea {
     private void calculate_dimensions(Cairo.Context cr) {
         width = get_allocated_width (); //total width for the widget
         height = get_allocated_height (); //total height for the widget
-        if(showLabels) {
+        if(show_labels) {
             piano_height = (0.8 * height) - 2 * v_padding;
              cr.select_font_face("monospace", Cairo.FontSlant.NORMAL, 
                                 Cairo.FontWeight.NORMAL);
@@ -412,15 +452,17 @@ public class Piano : DrawingArea {
         cr.stroke();
         
         //Redrawing marked natural keys
-        foreach(var entry in markedNotes.entries) {
-            if(!MusicalNotes.midi_is_accident(entry.key)) {
-                x = midi_to_x(entry.key);
-                cr.rectangle(x, y, key_width, piano_height);
-                cr.set_source_rgba(entry.value.color[0], entry.value.color[1],
-                                   entry.value.color[2], entry.value.color[3]);
-                cr.fill_preserve();
-                cr.set_source_rgba(0.0f, 0.0f, 0.0f, 1.0f);
-                cr.stroke();
+        if(marked_notes != null) {
+            foreach(var entry in marked_notes.entries) {
+                if(!MusicalNotes.midi_is_accident(entry.key)) {
+                    x = midi_to_x(entry.key);
+                    cr.rectangle(x, y, key_width, piano_height);
+                    cr.set_source_rgba(entry.value.color[0], entry.value.color[1],
+                                    entry.value.color[2], entry.value.color[3]);
+                    cr.fill_preserve();
+                    cr.set_source_rgba(0.0f, 0.0f, 0.0f, 1.0f);
+                    cr.stroke();
+                }
             }
         }
         
@@ -442,7 +484,7 @@ public class Piano : DrawingArea {
         //Drawing all accidentals
         cr.set_source_rgba(accident_key_color[0], accident_key_color[1],
                            accident_key_color[2], accident_key_color[3]);
-        for(var i = firstNote; i < firstNote + key_count ; i++) {
+        for(var i = first_note; i < first_note + key_count ; i++) {
             if(MusicalNotes.midi_is_accident(i))
                 cr.rectangle(x - w/2, y, w, h);
             else    
@@ -454,15 +496,17 @@ public class Piano : DrawingArea {
         
         
         //Redrawing marked accidentals
-        foreach(var entry in markedNotes.entries) {
-            if(MusicalNotes.midi_is_accident(entry.key)) {
-                x = midi_to_x(entry.key);
-                cr.rectangle(x - w/2, y, w, h);
-                cr.set_source_rgba(entry.value.color[0], entry.value.color[1],
-                                   entry.value.color[2], entry.value.color[3]);
-                cr.fill_preserve();
-                cr.set_source_rgba(0.0f, 0.0f, 0.0f, 1.0f);
-                cr.stroke();
+        if(marked_notes != null) {
+            foreach(var entry in marked_notes.entries) {
+                if(MusicalNotes.midi_is_accident(entry.key)) {
+                    x = midi_to_x(entry.key);
+                    cr.rectangle(x - w/2, y, w, h);
+                    cr.set_source_rgba(entry.value.color[0], entry.value.color[1],
+                                    entry.value.color[2], entry.value.color[3]);
+                    cr.fill_preserve();
+                    cr.set_source_rgba(0.0f, 0.0f, 0.0f, 1.0f);
+                    cr.stroke();
+                }
             }
         }
         

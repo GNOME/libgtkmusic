@@ -2,7 +2,7 @@
 # General
 # ============================================================================
 project('libgtkmusic', ['vala', 'c'],
-         version: '0.4',
+         version: '0.5',
          meson_version: '>= 0.44.0')
 
 author_name = 'Leandro Resende Mattioli'
@@ -32,7 +32,7 @@ conf_data = configuration_data()
 conf_data.set('author_name', author_name)
 conf_data.set('author_email', author_email)
 conf_data.set('author_contact', author_name + '<' + author_email + '>')
-conf_data.set('project_url', 'https://wiki.gnome.org/Projects/libgtkmusic')
+conf_data.set('project_url', 'https://gitlab.gnome.org/GNOME/libgtkmusic')
 conf_data.set('version_major', version_major)
 conf_data.set('version_minor', version_minor)
 conf_data.set('version', version)         # Build Version
@@ -97,8 +97,7 @@ if get_option('typelib')
         enable_typelib = true
         custom_target('gtkmusic typelib', 
             command: [
-                g_ir_compiler, '--shared-library', 
-                join_paths(get_option('libdir'), 'libgtkmusic.so'), # small hack
+                g_ir_compiler, '--shared-library', 'libgtkmusic.so', # small hack
                 '--output', '@OUTPUT@', join_paths(build_dir, gir_file)],
             output: typelib_file,
             depends: libgtkmusic,

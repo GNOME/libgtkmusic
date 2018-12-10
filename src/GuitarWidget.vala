@@ -23,7 +23,7 @@ public class GuitarString {
     /**
      * A random generator seed (vibration animation phase difference) 
      */
-    public double vibrateSeed;  //should be private with getter ?
+    public double vibrate_seed;  //should be private with getter ?
     
     /**
      * Guitar string color as a RGBA array of floats 
@@ -33,11 +33,11 @@ public class GuitarString {
     /**
      * Label color as a RGBA array of floats 
      */
-    public float[] labelColor = {0.0f, 0.0f, 0.0f, 1.0f};
+    public float[] label_color = {0.0f, 0.0f, 0.0f, 1.0f};
     
     public GuitarString(string note) {
         this.note = note;
-        vibrateSeed = Random.next_double();
+        vibrate_seed = Random.next_double();
     }
 }
 
@@ -83,24 +83,24 @@ public class GuitarPosition {
     /** 
      * The guitar string index [0,5] associated to this guitar position 
      */
-    public ushort stringIndex;
+    public ushort string_index;
     
     /** 
      * The fret index associated to this guitar position 
      */
-    public ushort fretIndex;
+    public ushort fret_index;
     
-    public GuitarPosition(ushort stringIndex, ushort fretIndex) {
-        this.stringIndex = stringIndex;
-        this.fretIndex = fretIndex;
+    public GuitarPosition(ushort string_index, ushort fret_index) {
+        this.string_index = string_index;
+        this.fret_index = fret_index;
     }
       
     public static uint hash_func(GuitarPosition key) {
-        return (13 + key.stringIndex) * 23 + key.fretIndex;
+        return (13 + key.string_index) * 23 + key.fret_index;
     }
     
     public static bool equal_func(GuitarPosition a, GuitarPosition b) {
-        if(a.stringIndex == b.stringIndex && a.fretIndex == b.fretIndex)
+        if(a.string_index == b.string_index && a.fret_index == b.fret_index)
             return true;
         return false; 
     } 
@@ -140,56 +140,56 @@ public class Guitar : DrawingArea {
     /**
      * Render string labels (e.g.: EADGBE) 
      */
-    public bool showLabels = true;
+    public bool show_labels = true;
     
     /**
      * Show octaves in labels (e.g.: E4) 
      */
-    public bool detailedLabels = false;
+    public bool detailed_labels = false;
     
     /** 
      * Draw additional line in 1st fret 
      */
-    public bool highlightFirstFret = true;
+    public bool highlight_first_fret = true;
     
     /** 
      * Auto-redraw when a note is added (disable for manual management) 
      */
-    public bool autoUpdate = true; 
+    public bool auto_update = true; 
     
     /** 
      * Whether the guitar should be animated (string vibrations)
      */
-    private bool shouldAnimate = false;
+    private bool should_animate = false;
     
     //Grid properties
 
     /** 
      * Number of frets 
      */
-    public ushort fretNumber = 17;
+    public ushort fret_number = 17;
 
-    //public float[] gridBgColor = {0.57f, 0.39f, 0.30f, 1.0f};
+    //public float[] grid_bg_color = {0.57f, 0.39f, 0.30f, 1.0f};
 
     /**
      * Grid background color as a RGBA array of floats
      */
-    public float[] gridBgColor = {0.486f, 0.309f, 0.251f, 1.0f};
+    public float[] grid_bg_color = {0.486f, 0.309f, 0.251f, 1.0f};
 
     /** 
      * Fret color as a RGBA array of floats 
      */
-    public float[] fretColor = {0.6f, 0.6f, 0.6f, 1.0f};
+    public float[] fret_color = {0.6f, 0.6f, 0.6f, 1.0f};
 
     /** 
      * Collection of strings 
      */
-    public ArrayList<GuitarString> guitarStrings;
+    public ArrayList<GuitarString> guitar_strings;
 
     /**
      * Collection of fret marks 
      */
-    public HashSet<GuitarFretMark> fretMarks;
+    public HashSet<GuitarFretMark> fret_marks;
     
     //Advanced style properties
     //TODO :: Guitar styles (classical, electrical, guitar hero, music school)
@@ -211,7 +211,7 @@ public class Guitar : DrawingArea {
     /** 
      * Marked notes dictionary (position and mark style) 
      */
-    public HashMap<GuitarPosition, MarkedNoteStyle> markedNotes;
+    public HashMap<GuitarPosition, MarkedNoteStyle> marked_notes;
     
     //=========================================================================
     //Private properties
@@ -241,20 +241,18 @@ public class Guitar : DrawingArea {
     * Create a new Guitar widget, which minimum size is defined to 170x60
     **/
     public Guitar () {
-        //stdout.printf("Creating guitar [START]..."); stdout.flush();
-        add_events (Gdk.EventMask.BUTTON_PRESS_MASK
-                  | Gdk.EventMask.BUTTON_RELEASE_MASK);
-        set_size_request (170, 60);  //minimum widget size
-        guitarStrings = new ArrayList<GuitarString> ();
-        fretMarks = new HashSet<GuitarFretMark> ();
-        markedNotes = new HashMap<GuitarPosition, MarkedNoteStyle> 
+        /* add_events (Gdk.EventMask.BUTTON_PRESS_MASK
+                  | Gdk.EventMask.BUTTON_RELEASE_MASK); */
+        guitar_strings = new ArrayList<GuitarString> ();
+        fret_marks = new HashSet<GuitarFretMark> ();
+        marked_notes = new HashMap<GuitarPosition, MarkedNoteStyle> 
                           ( (Gee.HashDataFunc?) GuitarPosition.hash_func,
                             (Gee.EqualDataFunc?) GuitarPosition.equal_func );
         foreach(string s in defaultStrings)
-            guitarStrings.add(new GuitarString(s));
+            guitar_strings.add(new GuitarString(s));
         foreach(ushort i in defaultFretMarks)
-            fretMarks.add(new GuitarFretMark(i));
-        //stdout.printf("Creating guitar [END]..."); stdout.flush();    
+            fret_marks.add(new GuitarFretMark(i));
+        set_size_request (170, 60);  //minimum widget size
     }
     
     //=========================================================================
@@ -265,7 +263,7 @@ public class Guitar : DrawingArea {
      * Start the animation on strings set to vibrate
      */ 
     public void start_animation() {
-        shouldAnimate = true;
+        should_animate = true;
         Timeout.add (10, update_animation);
     }
     
@@ -273,7 +271,7 @@ public class Guitar : DrawingArea {
      * Stop the string vibration animation
      */
     public void stop_animation() {
-        shouldAnimate = false;
+        should_animate = false;
         animateInstant = 0;
     }
     
@@ -283,34 +281,34 @@ public class Guitar : DrawingArea {
     private bool update_animation() {
         animateInstant += 0.3f;
         redraw();
-        return shouldAnimate;
+        return should_animate;
     }
     
     //====Marking-related======================================================
     
    /**
     * Highlight a position (string and fret) in the instrument
-    * @param stringIndex The string number (top string equals to 0)
-    * @param fretIndex The fret number
+    * @param string_index The string number (top string equals to 0)
+    * @param fret_index The fret number
     **/
-    public void mark_position(ushort stringIndex, ushort fretIndex,
+    public void mark_position(ushort string_index, ushort fret_index,
                               float[] color = {0.0f, 0.0f, 0.0f, 1.0f}) {
-        var key = new GuitarPosition(stringIndex, fretIndex);
-        markedNotes[key] = new MarkedNoteStyle(color);
-        if(autoUpdate)
+        var key = new GuitarPosition(string_index, fret_index);
+        marked_notes[key] = new MarkedNoteStyle(color);
+        if(auto_update)
             redraw();
     }
 
    /**
     * Remove the mark of a position (string and fret) in the instrument
-    * @param stringIndex The string number (topmost string equals to 0)
-    * @param fretIndex The fret number
+    * @param string_index The string number (topmost string equals to 0)
+    * @param fret_index The fret number
     **/    
-    public void unmark_position(ushort stringIndex, ushort fretIndex) {
-        var key = new GuitarPosition(stringIndex, fretIndex);
-        if(markedNotes.has_key(key))
-            markedNotes.unset(key);
-        if(autoUpdate)
+    public void unmark_position(ushort string_index, ushort fret_index) {
+        var key = new GuitarPosition(string_index, fret_index);
+        if(marked_notes.has_key(key))
+            marked_notes.unset(key);
+        if(auto_update)
             redraw();
     }
     
@@ -318,8 +316,8 @@ public class Guitar : DrawingArea {
     * Remove all marked notes in the Guitar view
     **/ 
     public void unmark_all() {
-        markedNotes.clear();
-        if(autoUpdate)
+        marked_notes.clear();
+        if(auto_update)
             redraw();
     }
     
@@ -329,15 +327,15 @@ public class Guitar : DrawingArea {
     **/
     public void mark_note(string note, 
                           float[] color = {0.0f, 0.0f, 0.0f, 1.0f}) {
-        bool oldAutoUpdate = autoUpdate;
+        bool oldAutoUpdate = auto_update;
         var positions = find_positions(note);
         if(positions == null)
             return;
         foreach(GuitarPosition k in positions) {
-            mark_position(k.stringIndex, k.fretIndex, color);
+            mark_position(k.string_index, k.fret_index, color);
         }
-        autoUpdate = oldAutoUpdate;
-        if(autoUpdate)
+        auto_update = oldAutoUpdate;
+        if(auto_update)
             redraw();
     }
     
@@ -346,15 +344,15 @@ public class Guitar : DrawingArea {
     * @param note A musical note in scientific notation (examples: F#4 , C)
     **/    
     public void unmark_note(string note) {
-        bool oldAutoUpdate = autoUpdate;
+        bool oldAutoUpdate = auto_update;
         var positions = find_positions(note);
         if(positions == null)
             return;
         foreach(GuitarPosition k in positions) {
-            unmark_position(k.stringIndex, k.fretIndex);
+            unmark_position(k.string_index, k.fret_index);
         }
-        autoUpdate = oldAutoUpdate;
-        if(autoUpdate)
+        auto_update = oldAutoUpdate;
+        if(auto_update)
             redraw();
     }
     
@@ -362,16 +360,16 @@ public class Guitar : DrawingArea {
     
     /**
      * Compute the fret index to accomplish a given note in a given string
-     * @param stringIndex The guitar string index
+     * @param string_index The guitar string index
      * @param note The musical note in scientific notation
      * @return The position where the note can be found or -1
      **/
-    public short note_position_in_string(ushort stringIndex, string note) {
-        string firstNote = guitarStrings[stringIndex].note;
+    public short note_position_in_string(ushort string_index, string note) {
+        string firstNote = guitar_strings[string_index].note;
         var midiA = MusicalNotes.get_note_as_midi_code(firstNote);
         var midiB = MusicalNotes.get_note_as_midi_code(note);
         short result = (short) (midiB - midiA);
-        if(result > fretNumber)
+        if(result > fret_number)
             return -1;
         return result;
     }
@@ -384,7 +382,7 @@ public class Guitar : DrawingArea {
         if(!MusicalNotes.validate(note) && !MusicalNotes.is_incomplete(note))
             return null;
 
-        short fretIndex;
+        short fret_index;
         HashSet<string> notesWithOctaves;
         var validPositions = new HashSet<GuitarPosition> (
             (Gee.HashDataFunc?) GuitarPosition.hash_func,
@@ -401,10 +399,10 @@ public class Guitar : DrawingArea {
         
         //Finding positions
         foreach(string n in notesWithOctaves) {
-            for(var s = 0 ; s < guitarStrings.size ; s++) {
-                fretIndex = note_position_in_string(s, n);
-                if(fretIndex >= 0)
-                    validPositions.add(new GuitarPosition(s, fretIndex));
+            for(var s = 0 ; s < guitar_strings.size ; s++) {
+                fret_index = note_position_in_string(s, n);
+                if(fret_index >= 0)
+                    validPositions.add(new GuitarPosition(s, fret_index));
             }
         }
         return validPositions;
@@ -414,9 +412,9 @@ public class Guitar : DrawingArea {
     * Get a MIDI code from a guitar position
     **/
     public ushort position_to_midi(GuitarPosition position) {
-        string first_note = guitarStrings[position.stringIndex].note;
+        string first_note = guitar_strings[position.string_index].note;
         ushort midi = MusicalNotes.get_note_as_midi_code(first_note);
-        midi += position.fretIndex;
+        midi += position.fret_index;
         return midi;
     }
     
@@ -450,12 +448,12 @@ public class Guitar : DrawingArea {
            (stringOffset < (1 - y_tolerance) && stringOffset > y_tolerance) )
            return null;
         
-        ushort fretIndex = (ushort) (x/fretSpacing);
-        ushort stringIndex = (ushort) (y/stringSpacing);
+        ushort fret_index = (ushort) (x/fretSpacing);
+        ushort string_index = (ushort) (y/stringSpacing);
         if(stringOffset > (1 - y_tolerance)) //in order to get nearest string
-            stringIndex += 1;
+            string_index += 1;
         
-        return new GuitarPosition(stringIndex, fretIndex);
+        return new GuitarPosition(string_index, fret_index);
     }
     
     //=====Events==============================================================
@@ -517,7 +515,7 @@ public class Guitar : DrawingArea {
         height = get_allocated_height (); //total height for the widget
 
         gridHeight = 0.8 * height;
-        if(showLabels) {
+        if(show_labels) {
             gridWidth = 0.95 * width;
             cr.select_font_face("monospace", Cairo.FontSlant.NORMAL, 
                                 Cairo.FontWeight.NORMAL);
@@ -529,8 +527,8 @@ public class Guitar : DrawingArea {
             
         gridX = width - gridWidth; //grid start point (X)
         gridY = (height - gridHeight) / 2; //grid start point (Y)
-        stringSpacing = gridHeight / (guitarStrings.size - 1); //segfault with glade
-        fretSpacing = gridWidth / fretNumber;  
+        stringSpacing = gridHeight / (guitar_strings.size - 1); //segfault with glade
+        fretSpacing = gridWidth / fret_number;  
         fretMarkRadius = 0.5 * Math.fmin(fretSpacing / 2, stringSpacing / 2);
         markedNoteRadius = 0.7 * Math.fmin(fretSpacing / 2, stringSpacing / 2);
         //stdout.printf("Calculate dimensions [END]."); stdout.flush();
@@ -542,8 +540,8 @@ public class Guitar : DrawingArea {
     **/    
     private void draw_base(Cairo.Context cr) {
         cr.save();
-        cr.set_source_rgba(gridBgColor[0], gridBgColor[1], 
-                           gridBgColor[2], gridBgColor[3]);
+        cr.set_source_rgba(grid_bg_color[0], grid_bg_color[1], 
+                           grid_bg_color[2], grid_bg_color[3]);
         cr.rectangle(gridX + fretSpacing, gridY, gridWidth, gridHeight);
         cr.fill();
         cr.restore();
@@ -559,16 +557,16 @@ public class Guitar : DrawingArea {
         string stringLabel;
         cr.set_line_width(2);
         cr.save();
-        for(var i = 0; i < guitarStrings.size ; i++) {
-            str = guitarStrings[i];
+        for(var i = 0; i < guitar_strings.size ; i++) {
+            str = guitar_strings[i];
             cr.set_source_rgba(str.color[0], str.color[1], 
                                str.color[2], str.color[3]);
             var stringY = gridY + i * stringSpacing;
             cr.move_to (gridX, stringY);
-            if(!str.vibrate || !shouldAnimate)
+            if(!str.vibrate || !should_animate)
                 cr.line_to (gridX + width, stringY);
             else {
-                var instant = Math.sin(animateInstant + 4 * str.vibrateSeed);
+                var instant = Math.sin(animateInstant + 4 * str.vibrate_seed);
                 var amplitude = instant * 0.1 * stringSpacing;
                 cr.curve_to (gridX, stringY + amplitude, 
                              gridX + width, stringY + amplitude,
@@ -577,9 +575,9 @@ public class Guitar : DrawingArea {
             cr.stroke();
             cr.set_source_rgba(0.0, 0.0, 0.0, 1.0);
             Cairo.TextExtents te;
-            if (showLabels) {
-                stringLabel = guitarStrings[i].note;
-                if (!detailedLabels)
+            if (show_labels) {
+                stringLabel = guitar_strings[i].note;
+                if (!detailed_labels)
                     stringLabel = stringLabel[0:stringLabel.length - 1];
                 cr.text_extents(stringLabel, out te);
                 cr.move_to(gridX - 0.5 - te.x_bearing - te.width, 
@@ -597,16 +595,16 @@ public class Guitar : DrawingArea {
     */  
     private void draw_frets(Cairo.Context cr) {
         cr.save();
-        cr.set_source_rgba(fretColor[0], fretColor[1], 
-                           fretColor[2], fretColor[3]);
-        for(var j = 1; j < fretNumber; j++) {
+        cr.set_source_rgba(fret_color[0], fret_color[1], 
+                           fret_color[2], fret_color[3]);
+        for(var j = 1; j < fret_number; j++) {
             var fretX = gridX + j * fretSpacing;
             cr.move_to (fretX, gridY);
             cr.line_to (fretX, gridY + gridHeight);
         }
         cr.stroke();
         cr.restore();
-        if(!highlightFirstFret)
+        if(!highlight_first_fret)
             return;
         cr.save ();
         cr.set_line_width (0.1 * fretSpacing);
@@ -621,10 +619,10 @@ public class Guitar : DrawingArea {
     * @param cr The drawing context for the widget
     */  
     private void draw_fret_marks(Cairo.Context cr) {
-        if(fretMarks.size == 0)
+        if(fret_marks.size == 0)
             return;
         cr.save ();
-        foreach (GuitarFretMark fm in fretMarks) {
+        foreach (GuitarFretMark fm in fret_marks) {
             var p = fm.position;
             cr.set_source_rgba(fm.color[0], fm.color[1], 
                                fm.color[2], fm.color[3]);
@@ -641,15 +639,15 @@ public class Guitar : DrawingArea {
     * @param cr The drawing context for the widget
     */  
     private void draw_marked_notes(Cairo.Context cr) {
-        if(markedNotes.size == 0)
+        if(marked_notes.size == 0)
             return;
         cr.save ();
-        foreach (var entry in markedNotes.entries) {
+        foreach (var entry in marked_notes.entries) {
             var k = entry.key;
             var v = entry.value;
             cr.set_source_rgba(v.color[0], v.color[1], v.color[2], v.color[3]);
-            var x = gridX + (k.fretIndex + 0.5) * fretSpacing;
-            var y = gridY + k.stringIndex * stringSpacing;
+            var x = gridX + (k.fret_index + 0.5) * fretSpacing;
+            var y = gridY + k.string_index * stringSpacing;
             cr.move_to(x, y);
             cr.arc (x, y, markedNoteRadius, 0, 2 * Math.PI);
             cr.fill();
@@ -672,7 +670,6 @@ public class Guitar : DrawingArea {
         }
         Cairo.Region region = window.get_clip_region ();
         window.invalidate_region (region, true);
-        window.process_updates (true);
     }
 }
 
