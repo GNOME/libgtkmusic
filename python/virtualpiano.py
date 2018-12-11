@@ -3,16 +3,16 @@
 import gi
 gi.require_version('Gtk', '3.0')
 gi.require_version('Gdk', '3.0')
-gi.require_version('GtkMusic', '0.5')
+gi.require_version('GtkMusic', '0.6')
 
 import fluidsynth
 from gi.repository import Gtk, Gdk, GtkMusic
 
-HIGHLIGHT_COLOR = [0.5, 0.5, 0.5, 1.0]
+HIGHLIGHT_COLOR = Gdk.RGBA(*[0.5, 0.5, 0.5, 1.0])
 
 def note_pressed(widget, event, midi_code):
     print('Note %d pressed' % midi_code)
-    fs.noteon(0, midi_code, 30)
+    fs.noteon(0, midi_code, 100)
     widget.mark_midi(midi_code, HIGHLIGHT_COLOR)
     widget.redraw()
 
