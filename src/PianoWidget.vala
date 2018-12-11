@@ -1,5 +1,6 @@
 using Gtk;
 using Gee;
+using Gdk;
 
 //TODO Make a QCAD picture with all relevant dimensions and offsets
 //TODO Labels
@@ -54,7 +55,7 @@ public class Piano : DrawingArea {
      * @param midi_note The MIDI value (number) of the pressed note
      */
     public signal void note_pressed (Gdk.EventButton event,
-                                     int midi_note); //ushort not supported?
+                                     ushort midi_note);
 
     /**
      * Signal emitted when a note has been released (mouse button released)
@@ -62,7 +63,7 @@ public class Piano : DrawingArea {
      * @param midi_note The MIDI value (number) of the released note
      */
     public signal void note_released (Gdk.EventButton event,
-                                      int midi_note); //ushort not supported?
+                                      ushort midi_note);
   
     //=========================================================================
     //Properties
@@ -79,49 +80,55 @@ public class Piano : DrawingArea {
     /**
      * Automatically redraw the piano whenever there's a change
      */
-    public bool auto_update = true;
+    public bool auto_update { get; set; default = true; }
 
     /**
      * Number of keys
      */
-    public ushort key_count = 24;
+    public ushort key_count { get; set; default = 24; }
 
     /**
      * MIDI Code of the first key's note (Defaults to C2)
      */
-    public ushort first_note = 36;  //C2
+    public ushort first_note { get; set; default = 36; }
 
     /**
      * RGBA color used to draw natural keys
      */
-    public float[] nat_key_color = {1.0f, 1.0f, 1.0f, 1.0f};
+    public RGBA nat_key_color { get; set; }
 
     /**
      * RGBA color used to draw accident keys
      */
-    public float[] accident_key_color = {0.0f, 0.0f, 0.0f, 1.0f};
+    public RGBA accident_key_color { get; set; }
 
     /**
      * Whether note names should be drawn
      */
-    public bool show_labels = false;
+    public bool show_labels  { get; set; default = false; }
     
     /**
      * Show octaves should be added in labels (e.g. E4)
      */
-    public bool detailed_labels = false;
+    public bool detailed_labels { get; set; default = false; }
 
     /**
      * Labels position
      */
-    public LabelPosition labels_position = LabelPosition.UP;
+    public LabelPosition labels_position { get; set; default = LabelPosition.UP; }
 
     /**
      * A style for a given marked note (currently only a color)
      */
     public class MarkedNoteStyle {
-        public float[] color = {0.5f, 0.5f, 0.5f, 1.0f};
-        public MarkedNoteStyle(float[] color) {
+        public RGBA color { get; private set; }
+        
+        public MarkedNoteStyle() {
+            this.color = { 0.5f, 0.5f, 0.5f, 1.0f };
+
+        }
+
+        public MarkedNoteStyle.with_color(RGBA color) {
             this.color = color;
         }
     }
@@ -147,6 +154,8 @@ public class Piano : DrawingArea {
     private double width;
     private double height;
     private double key_width;
+    private const int MINIMUM_WIDTH = 120;
+    private const int MINIMUM_HEIGHT = 40;
     
     
     //=========================================================================
@@ -156,11 +165,21 @@ public class Piano : DrawingArea {
     /**
      * Create a new Piano widget, which minimum size is defined to 120x40
      **/
-    public Piano() {
+    construct {
         /* add_events (Gdk.EventMask.BUTTON_PRESS_MASK
                   | Gdk.EventMask.BUTTON_RELEASE_MASK); */
         marked_notes = new HashMap<ushort, MarkedNoteStyle> ();
-        set_size_request (120, 40);  //minimum widget size
+        nat_key_color = {1.0f, 1.0f, 1.0f, 1.0f};
+        accident_key_color = {0.0f, 0.0f, 0.0f, 1.0f};
+        set_size_request (MINIMUM_WIDTH, MINIMUM_HEIGHT);  //minimum widget size
+    }
+
+    public override void size_allocate (Gtk.Allocation allocation) {
+        if(allocation.width < MINIMUM_WIDTH)
+            allocation.width = MINIMUM_WIDTH;
+        if(allocation.height < MINIMUM_HEIGHT)
+            allocation.height = MINIMUM_HEIGHT;
+        base.size_allocate (allocation);
     }
     
     //====Marking-related======================================================
@@ -168,11 +187,11 @@ public class Piano : DrawingArea {
     /**
      * Highlight a key corresponding to a MIDI code
      * @param midi_note A valid MIDI code (in range: 21 .. 108)
-     * @param color The color (in RGBA []) to fill the marked key (default: blue)
+     * @param color The color to fill the marked key (default: blue)
      **/
     public void mark_midi(ushort midi_note, 
-                          float[] color = {0.0f, 0.0f, 0.5f, 1.0f}) {
-        marked_notes[midi_note] = new MarkedNoteStyle(color);
+                          RGBA color = {0.0f, 0.0f, 0.5f, 1.0f}) {
+        marked_notes[midi_note] = new MarkedNoteStyle.with_color(color);
         if(auto_update)
             redraw();     
     }
@@ -193,7 +212,7 @@ public class Piano : DrawingArea {
     * @param note A musical note in scientific notation (examples: F#4 , C)
     **/
     public void mark_note(string note,
-                          float[] color = {0.0f, 0.0f, 0.5f, 1.0f}) {
+                          RGBA color = {0.0f, 0.0f, 0.5f, 1.0f}) {
         bool old_auto_update = auto_update;
 
         //Preparing list of keys to mark
@@ -203,7 +222,7 @@ public class Piano : DrawingArea {
         
         //Adding keys to marked notes
         foreach(ushort u in positions)
-            marked_notes[u] = new MarkedNoteStyle(color);
+            marked_notes[u] = new MarkedNoteStyle.with_color(color);
         
         auto_update = old_auto_update;
         if(auto_update)
@@ -445,8 +464,8 @@ public class Piano : DrawingArea {
         for(var i = 0 ; i < nat_keys ; i++)
             cr.rectangle(x + i * key_width, piano_y, key_width, piano_height);
         cr.stroke_preserve();
-        cr.set_source_rgba(nat_key_color[0], nat_key_color[1], 
-                           nat_key_color[2], nat_key_color[3]);
+        cr.set_source_rgba(nat_key_color.red, nat_key_color.green, 
+                           nat_key_color.blue, nat_key_color.alpha);
         cr.fill_preserve();
         cr.set_source_rgba(0.0f, 0.0f, 0.0f, 1.0f);
         cr.stroke();
@@ -457,8 +476,8 @@ public class Piano : DrawingArea {
                 if(!MusicalNotes.midi_is_accident(entry.key)) {
                     x = midi_to_x(entry.key);
                     cr.rectangle(x, y, key_width, piano_height);
-                    cr.set_source_rgba(entry.value.color[0], entry.value.color[1],
-                                    entry.value.color[2], entry.value.color[3]);
+                    cr.set_source_rgba(entry.value.color.red, entry.value.color.green,
+                                    entry.value.color.blue, entry.value.color.alpha);
                     cr.fill_preserve();
                     cr.set_source_rgba(0.0f, 0.0f, 0.0f, 1.0f);
                     cr.stroke();
@@ -482,8 +501,8 @@ public class Piano : DrawingArea {
         cr.save();
         
         //Drawing all accidentals
-        cr.set_source_rgba(accident_key_color[0], accident_key_color[1],
-                           accident_key_color[2], accident_key_color[3]);
+        cr.set_source_rgba(accident_key_color.red, accident_key_color.green,
+                           accident_key_color.blue, accident_key_color.alpha);
         for(var i = first_note; i < first_note + key_count ; i++) {
             if(MusicalNotes.midi_is_accident(i))
                 cr.rectangle(x - w/2, y, w, h);
@@ -501,8 +520,8 @@ public class Piano : DrawingArea {
                 if(MusicalNotes.midi_is_accident(entry.key)) {
                     x = midi_to_x(entry.key);
                     cr.rectangle(x - w/2, y, w, h);
-                    cr.set_source_rgba(entry.value.color[0], entry.value.color[1],
-                                    entry.value.color[2], entry.value.color[3]);
+                    cr.set_source_rgba(entry.value.color.red, entry.value.color.green,
+                                    entry.value.color.blue, entry.value.color.alpha);
                     cr.fill_preserve();
                     cr.set_source_rgba(0.0f, 0.0f, 0.0f, 1.0f);
                     cr.stroke();

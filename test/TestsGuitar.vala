@@ -15,6 +15,8 @@ int main(string[] args) {
     Gtk.init (ref args);
     var window = new Window ();
     var guitar = new Guitar ();
+    guitar.add_events(Gdk.EventMask.BUTTON_PRESS_MASK | 
+                      Gdk.EventMask.BUTTON_RELEASE_MASK);
     guitar.note_pressed.connect(note_pressed_callback);
     guitar.guitar_strings[0].vibrate = true;
     guitar.guitar_strings[5].vibrate = true;

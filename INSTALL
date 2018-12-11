@@ -13,6 +13,7 @@ OS Optional Features
 
 Python Required Packages
 	meson
+	ninja
 
 1) Install dependencies
 	sudo apt install libgee-0.8-dev libgee-0.8-2 valac-0.30

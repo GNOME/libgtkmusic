@@ -2,7 +2,7 @@
 # General
 # ============================================================================
 project('libgtkmusic', ['vala', 'c'],
-         version: '0.5',
+         version: '0.6',
          meson_version: '>= 0.44.0')
 
 author_name = 'Leandro Resende Mattioli'
@@ -107,6 +107,8 @@ if get_option('typelib')
         enable_typelib = false
         warning('GIR Compiler not found! Skipping Typelib creation.')
     endif
+else
+    enable_typelib = false
 endif
 
 
@@ -134,17 +136,18 @@ if get_option('glade') # and libgladeui found
             if validation.stderr().strip() != ''
                 error('Invalid XML file found!')
             endif
-            install_data(xml_path, install_dir: glade_catalog_dir)
-            install_subdir(pixmaps_path, install_dir: glade_pixmap_dir,
-                           strip_directory: true)
-            
         else
             warning('XMLLint not found. Skipping Glade catalog validation.')
         endif
+        install_data(xml_path, install_dir: glade_catalog_dir)
+        install_subdir(pixmaps_path, install_dir: glade_pixmap_dir,
+                       strip_directory: true)
     else
         enable_glade = false
         warning('GladeUI not found. Skipping Glade Catalog creation.')
     endif
+else
+    enable_glade = false
 endif
 
 # ============================================================================
@@ -201,6 +204,8 @@ if get_option('doc')
         enable_doc = false
         warning('Valadoc not found. Skipping HTML API reference creation.')
     endif
+else
+    enable_doc = false
 endif
 
 
